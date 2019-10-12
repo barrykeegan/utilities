@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Encoding and Decoding Tools for Various Cyphers</title>
+    <meta charset="UTF-8">
+    <script src="jquery.js"></script>
+    <script src="encodecode.js"></script>
+    <script type="text/javascript">
+      function runTests()
+      {
+        console.log("Test");
+        $("body").append(displayb64hash());
+        $("body").append("QUJD");
+        console.log(b64hash);
+        console.log(displayb64hash());
+      }
+
+      function decodeToPlainContent()
+      {
+        console.log("Convert to Plain clicked!");
+
+        /*deal with no content being entered to be decoded*/
+        var encodedContent = $("#encodedContent").val();
+        if(encodedContent.length < 1)
+        {
+          alert("You have not entered any content to be decoded!");
+          return -1;
+        }
+        console.log("Length of: " + encodedContent + " is " + encodedContent.length);
+
+        /*process decoding in relevant function*/
+        var encodingScheme = $("#encoding").val();
+        switch(encodingScheme)
+        {
+          case "base64":
+            console.log("Encoding option chosen is: " + encodingScheme);
+            processBase64Decoding(encodedContent);
+            break;
+          default:
+            break;
+        }
+        return 0;
+      }
+
+      function encodeFromPlainContent()
+      {
+        console.log("Convert from Plain clicked!");
+
+        /*deal with no content being entered to be decoded*/
+        var plainContent = $("#plainContent").val();
+        if(plainContent.length < 1)
+        {
+          alert("You have not entered any content to be encoded!");
+          return -1;
+        }
+        console.log("Length of: " + plainContent + " is " + plainContent.length);
+        console.log(btoa(plainContent));
+
+        /*process decoding in relevant function*/
+        var encodingScheme = $("#encoding").val();
+        switch(encodingScheme)
+        {
+          case "base64":
+            console.log("Encoding option chosen is: " + encodingScheme);
+            processBase64Encoding(plainContent);
+            break;
+          default:
+            break;
+        }
+        return 0;
+      }
+
+      function processBase64Decoding(encodedContent)
+      {
+        var decodedBinaryString="";
+        var decodedPlainContent="";
+
+        for (var i = 0; i < encodedContent.length; i++)
+        {
+          if (encodedContent[i] !== "=")
+          {
+            decodedBinaryString += b64hash[encodedContent[i]];
+          }
+        }
+
+        var j=0;
+        while( (j*8+8) <= decodedBinaryString.length)
+        {
+          var startIndex = j*8;
+          c=decodedBinaryString.substring(startIndex,startIndex+8 + "\n");
+          j++;
+          console.log(c);
+          console.log(parseInt(c,2));
+          console.log( String.fromCharCode(parseInt(c,2)) );
+          decodedPlainContent += String.fromCharCode(parseInt(c,2));
+          console.log(decodedPlainContent);
+        }
+        $("#plainContent").val(decodedPlainContent);
+        console.log("Length of: " + decodedBinaryString + " is " + decodedBinaryString.length);
+      }
+
+      function processBase64Encoding(plainContent)
+      {
+        var reverseb64hash = {};
+        for (var encodedChar in b64hash)
+        {
+            reverseb64hash[b64hash[encodedChar]] = encodedChar;
+        }
+        console.log(reverseb64hash);
+
+        var plainContentBinaryString = ""
+        for(var i = 0; i < plainContent.length; i++)
+        {
+          c = plainContent.charCodeAt(i).toString(2);
+          if(c.length < 8)
+          {
+            for(var j = c.length; j < 8; j++ )
+            {
+              c = "0" + c;
+            }
+          }
+          console.log(c);
+          plainContentBinaryString += c;
+        }
+        console.log(plainContentBinaryString);
+        console.log("Length of: " + plainContentBinaryString + " is " + plainContentBinaryString.length);
+
+        var encodedString = ""
+        var currSegment = 0;
+        while (currSegment*6 < plainContentBinaryString.length)
+        {
+          currSegmentStartIndex = currSegment*6;
+          //There is at lease one full b64 character value left
+          if(currSegmentStartIndex + 6 < plainContentBinaryString.length)
+          {
+            encodedString += reverseb64hash[plainContentBinaryString.substr(currSegmentStartIndex, 6)];
+          }
+          else
+          {
+            remainder = plainContentBinaryString.substr(currSegmentStartIndex);
+            for(k=remainder.length;k<6;k++)
+            {
+              remainder += "0";
+            }
+            encodedString += reverseb64hash[remainder];
+          }
+          currSegment++
+        }
+        while(encodedString.length%4 !== 0)
+        {
+          encodedString += "=";
+        }
+        console.log(encodedString);
+        $("#encodedContent").val(encodedString);
+      }
+    </script>
+  </head>
+  <body onload="runTests()">
+    <form>
+      <table>
+        <thead>
+          <tr>
+            <th>Plain Content</th>
+            <th></th>
+            <th>Encoded Content</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td rowspan="2">
+              <textarea name="plainContent" id="plainContent" rows="10" cols="40"></textarea>
+            </td>
+            <td>
+              <button type="button" name="plainToEncoding" onclick="encodeFromPlainContent()">Convert from plain -&gt;</button>
+
+            </td>
+            <td rowspan="2">
+              <textarea name="encodedContent" id="encodedContent" rows="10" cols="40"></textarea>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <button type="button" name="decodeToPlain" onclick="decodeToPlainContent()">&lt;- Convert to plain</button>
+            </td>
+          </tr>
+        </tbody>
+        </table>
+        <label for="encoding">Please Choose the Encoding Scheme to work with: </label>
+        <select name="encoding" id="encoding">
+          <option value="base64">Base 64</option>
+        </select>
+
+
+    </form>
+
+  </body>
+</html>
