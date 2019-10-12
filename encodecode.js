@@ -13,14 +13,88 @@ var b64hash = {
   '+':"111110", '/':"111111"
 };
 
-function decodefrombase64(encoded)
+function processBase64Decoding(encodedContent)
 {
+  var decodedBinaryString="";
+  var decodedPlainContent="";
 
+  for (var i = 0; i < encodedContent.length; i++)
+  {
+    if (encodedContent[i] !== "=")
+    {
+      decodedBinaryString += b64hash[encodedContent[i]];
+    }
+  }
+
+  var j=0;
+  while( (j*8+8) <= decodedBinaryString.length)
+  {
+    var startIndex = j*8;
+    c=decodedBinaryString.substring(startIndex,startIndex+8 + "\n");
+    j++;
+    console.log(c);
+    console.log(parseInt(c,2));
+    console.log( String.fromCharCode(parseInt(c,2)) );
+    decodedPlainContent += String.fromCharCode(parseInt(c,2));
+    console.log(decodedPlainContent);
+  }
+  $("#plainContent").val(decodedPlainContent);
+  console.log("Length of: " + decodedBinaryString + " is " + decodedBinaryString.length);
 }
 
-function encodetobase64(plain)
+function processBase64Encoding(plainContent)
 {
+  var reverseb64hash = {};
+  for (var encodedChar in b64hash)
+  {
+      reverseb64hash[b64hash[encodedChar]] = encodedChar;
+  }
+  console.log(reverseb64hash);
 
+  var plainContentBinaryString = ""
+  for(var i = 0; i < plainContent.length; i++)
+  {
+    c = plainContent.charCodeAt(i).toString(2);
+    if(c.length < 8)
+    {
+      for(var j = c.length; j < 8; j++ )
+      {
+        c = "0" + c;
+      }
+    }
+    console.log(c);
+    plainContentBinaryString += c;
+  }
+  console.log(plainContentBinaryString);
+  console.log("Length of: " + plainContentBinaryString + " is " + plainContentBinaryString.length);
+
+  var encodedString = ""
+  var currSegment = 0;
+  while (currSegment*6 < plainContentBinaryString.length)
+  {
+    currSegmentStartIndex = currSegment*6;
+    //There is at lease one full b64 character value left
+    if(currSegmentStartIndex + 6 < plainContentBinaryString.length)
+    {
+      encodedString += reverseb64hash[plainContentBinaryString.substr(currSegmentStartIndex, 6)];
+    }
+    else
+    {
+      remainder = plainContentBinaryString.substr(currSegmentStartIndex);
+      for(k=remainder.length;k<6;k++)
+      {
+        remainder += "0";
+      }
+      encodedString += reverseb64hash[remainder];
+    }
+    currSegment++
+  }
+  while(encodedString.length%4 !== 0)
+  {
+    encodedString += "=";
+  }
+  console.log(encodedString);
+  $("#encodedContent").val(encodedString);
 }
 
 function displayb64hash()
