@@ -53,9 +53,7 @@
         {
           alert("You have not entered any content to be encoded!");
           return -1;
-        }
-        console.log("Length of: " + plainContent + " is " + plainContent.length);
-        console.log(btoa(plainContent));
+        }        
 
         /*process decoding in relevant function*/
         var encodingScheme = $("#encoding").val();
@@ -63,6 +61,7 @@
         {
           case "base64":
             console.log("Encoding option chosen is: " + encodingScheme);
+            console.log(btoa(plainContent));
             processBase64Encoding(plainContent);
             break;
           default:
